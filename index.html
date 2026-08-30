@@ -1,0 +1,3078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#171f2b">
+<title>Bhut Herit | 3D Portfolio</title>
+
+<style>
+/* =========================================================
+   BASE
+========================================================= */
+*,*::before,*::after{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    text-decoration:none;
+    list-style:none;
+    border:none;
+    outline:none;
+    font-family:"Poppins","Segoe UI",Arial,sans-serif;
+}
+
+:root{
+    --nav-bg:rgba(23,31,43,.88);
+    --bg:#171f2b;
+    --bg2:#1f2733;
+    --bg3:#2d3542;
+    --accent:#00eeff;
+    --accent-dim:rgba(0,238,255,.15);
+    --white:#fff;
+    --muted:#7c8594;
+    --text:#a0a8b5;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-size:62.5%;
+    background:var(--bg);
+    color:var(--white);
+}
+
+body{
+    -webkit-tap-highlight-color:transparent;
+}
+
+::selection{
+    background:var(--accent);
+    color:var(--bg);
+}
+
+::-webkit-scrollbar{
+    width:5px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:var(--accent);
+    border-radius:10px;
+}
+
+::placeholder{
+    color:var(--muted);
+}
+
+/* =========================================================
+   SVG ICON SYSTEM
+========================================================= */
+.icon{
+    width:1em;
+    height:1em;
+    display:inline-block;
+    flex-shrink:0;
+    vertical-align:middle;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+.icon-fill{
+    fill:currentColor;
+    stroke:none;
+}
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+.nav{
+    position:fixed;
+    bottom:2.5rem;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(95%,65rem);
+    padding:1.4rem 0;
+    background:var(--nav-bg);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-radius:10rem;
+    z-index:9999;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,.4),
+        0 0 0 1px rgba(255,255,255,.08);
+}
+
+.nav-list{
+    display:flex;
+    justify-content:space-evenly;
+    align-items:center;
+}
+
+.nav-item{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:4.8rem;
+    height:4.8rem;
+    font-size:2.6rem;
+    cursor:pointer;
+    color:var(--muted);
+    border-radius:50%;
+    transition:.3s;
+}
+
+.nav-item:hover,
+.nav-item.active{
+    color:var(--accent);
+    background:var(--accent-dim);
+}
+
+.nav-item .icon{
+    width:2.5rem;
+    height:2.5rem;
+}
+
+.tooltip{
+    position:absolute;
+    bottom:calc(100% + 1rem);
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--accent);
+    color:var(--bg);
+    padding:.5rem 1.2rem;
+    border-radius:.6rem;
+    font-size:1.2rem;
+    font-weight:700;
+    white-space:nowrap;
+    pointer-events:none;
+    opacity:0;
+    visibility:hidden;
+    transition:.25s;
+}
+
+.tooltip::after{
+    content:"";
+    position:absolute;
+    top:100%;
+    left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent;
+    border-top-color:var(--accent);
+}
+
+.nav-item:hover .tooltip{
+    opacity:1;
+    visibility:visible;
+}
+
+/* =========================================================
+   3D SCENE
+========================================================= */
+.scene{
+    position:fixed;
+    inset:0;
+    perspective:2000px;
+    perspective-origin:50% 50%;
+    overflow:hidden;
+}
+
+.cube{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform 1s cubic-bezier(.645,.045,.355,1);
+}
+
+.face{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+    display:flex;
+    align-items:stretch;
+    background:var(--bg);
+}
+
+.face:nth-child(even){
+    background:var(--bg2);
+}
+
+.scroll-wrap{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:6rem 8% 12rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.scroll-wrap.align-start{
+    justify-content:flex-start;
+}
+
+.scroll-wrap::-webkit-scrollbar{
+    display:none;
+}
+
+.content-box{
+    width:100%;
+    max-width:1200px;
+    margin:0 auto;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+.section-title{
+    font-size:clamp(3rem,5vw,4.5rem);
+    font-weight:700;
+    text-align:center;
+    margin-bottom:4rem;
+    letter-spacing:-.02em;
+}
+
+.section-title span{
+    color:var(--accent);
+}
+
+p{
+    font-size:1.55rem;
+    line-height:1.7;
+    color:var(--text);
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.8rem;
+    padding:1.2rem 2.8rem;
+    border-radius:10rem;
+    font-size:1.5rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+    background:var(--accent);
+    color:var(--bg);
+    box-shadow:0 0 1.5rem rgba(0,238,255,.35);
+}
+
+.btn .icon{
+    width:1.8rem;
+    height:1.8rem;
+}
+
+.btn:hover{
+    box-shadow:0 0 3rem rgba(0,238,255,.6);
+    transform:translateY(-2px);
+}
+
+.btn-outline{
+    background:transparent;
+    color:var(--accent);
+    border:2px solid var(--accent);
+    box-shadow:none;
+}
+
+.btn-outline:hover{
+    background:var(--accent);
+    color:var(--bg);
+}
+
+/* =========================================================
+   HOME
+========================================================= */
+.home-grid{
+    display:flex;
+    align-items:center;
+    gap:7rem;
+    flex-wrap:wrap;
+}
+
+.home-info{
+    flex:1;
+    min-width:28rem;
+}
+
+.home-info .greeting{
+    font-size:1.8rem;
+    color:var(--muted);
+    margin-bottom:.5rem;
+}
+
+.home-info h1{
+    font-size:clamp(3.5rem,6vw,5.5rem);
+    color:var(--accent);
+    line-height:1.1;
+    font-weight:800;
+    text-shadow:0 0 3rem rgba(0,238,255,.3);
+}
+
+.typewriter-line{
+    font-size:clamp(1.8rem,3vw,2.6rem);
+    font-weight:500;
+    margin-top:.8rem;
+    min-height:4rem;
+    color:var(--white);
+}
+
+.cursor::after{
+    content:"|";
+    color:var(--accent);
+    animation:blink .7s infinite;
+}
+
+@keyframes blink{
+    0%,100%{opacity:1}
+    50%{opacity:0}
+}
+
+.home-desc{
+    margin:2rem 0 3rem;
+}
+
+.btn-row{
+    display:flex;
+    align-items:center;
+    gap:2rem;
+    flex-wrap:wrap;
+}
+
+.social-row{
+    display:flex;
+    gap:1rem;
+}
+
+.social-btn{
+    display:inline-flex;
+    width:4.2rem;
+    height:4.2rem;
+    border:2px solid var(--accent);
+    border-radius:50%;
+    font-size:1.9rem;
+    color:var(--accent);
+    align-items:center;
+    justify-content:center;
+    transition:.3s;
+}
+
+.social-btn .icon{
+    width:2rem;
+    height:2rem;
+}
+
+.social-btn:hover{
+    background:var(--accent);
+    color:var(--bg);
+    box-shadow:0 0 1.5rem rgba(0,238,255,.5);
+}
+
+/* BIGGER HOME PHOTO */
+.home-avatar-wrap{
+    flex-shrink:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.home-avatar{
+    width:clamp(24rem,32vw,36rem);
+    height:clamp(24rem,32vw,36rem);
+    border-radius:50%;
+    border:5px solid var(--accent);
+    padding:.7rem;
+    box-shadow:
+        0 0 3rem rgba(0,238,255,.4),
+        0 0 7rem rgba(0,238,255,.12);
+    background:linear-gradient(135deg,var(--bg),var(--accent));
+    overflow:hidden;
+    transition:.4s;
+}
+
+.home-avatar:hover{
+    transform:scale(1.03);
+    box-shadow:
+        0 0 5rem rgba(0,238,255,.6),
+        0 0 10rem rgba(0,238,255,.15);
+}
+
+.home-avatar img{
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:cover;
+    display:block;
+}
+
+/* =========================================================
+   ABOUT
+========================================================= */
+.about-grid{
+    display:flex;
+    align-items:center;
+    gap:5rem;
+    flex-wrap:wrap;
+}
+
+.about-photos{
+    flex:0 0 42rem;
+    min-height:38rem;
+    position:relative;
+}
+
+.about-photo{
+    position:absolute;
+    width:27rem;
+    height:32rem;
+    border-radius:2rem;
+    overflow:hidden;
+    border:3px solid var(--accent);
+    box-shadow:0 0 3rem rgba(0,238,255,.25);
+    transition:.4s;
+}
+
+.about-photo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.about-photo.one{
+    top:0;
+    left:0;
+    transform:rotate(-5deg);
+}
+
+.about-photo.two{
+    right:0;
+    bottom:0;
+    transform:rotate(5deg);
+}
+
+.about-photo:hover{
+    z-index:5;
+    transform:scale(1.05) rotate(0);
+    box-shadow:0 0 5rem rgba(0,238,255,.45);
+}
+
+.about-text{
+    flex:1;
+    min-width:28rem;
+}
+
+.about-text h2{
+    font-size:clamp(3rem,4.5vw,4.5rem);
+    font-weight:700;
+    margin-bottom:.8rem;
+}
+
+.about-text h3{
+    font-size:2rem;
+    color:var(--accent);
+    margin-bottom:1.5rem;
+    font-weight:500;
+}
+
+/* =========================================================
+   RESUME
+========================================================= */
+.tab-bar{
+    display:flex;
+    gap:0;
+    margin-bottom:3rem;
+    border-bottom:2px solid rgba(255,255,255,.08);
+}
+
+.tab-btn{
+    flex:1;
+    padding:1.4rem 1rem;
+    font-size:1.5rem;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    text-align:center;
+    border-bottom:3px solid transparent;
+    margin-bottom:-2px;
+    transition:.3s;
+    background:none;
+}
+
+.tab-btn:hover{
+    color:var(--white);
+}
+
+.tab-btn.active{
+    color:var(--accent);
+    border-bottom-color:var(--accent);
+}
+
+.tab-panel{
+    display:none;
+}
+
+.tab-panel.active{
+    display:grid;
+}
+
+.cards-grid{
+    grid-template-columns:repeat(auto-fill,minmax(28rem,1fr));
+    gap:2rem;
+}
+
+.skill-grid{
+    grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));
+    gap:1.5rem;
+}
+
+.card{
+    background:var(--bg3);
+    border:1px solid transparent;
+    border-radius:1.2rem;
+    padding:2.5rem;
+    transition:.3s;
+}
+
+.card:hover{
+    border-color:var(--accent);
+    transform:translateY(-4px);
+    box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+
+.card-date{
+    font-size:1.3rem;
+    color:var(--accent);
+    font-weight:500;
+    margin-bottom:.4rem;
+}
+
+.card-title{
+    font-size:1.8rem;
+    font-weight:700;
+    color:var(--white);
+    margin-bottom:.3rem;
+}
+
+.card-sub{
+    font-size:1.4rem;
+    color:var(--muted);
+    margin-bottom:1rem;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+}
+
+.card-sub::before{
+    content:"";
+    width:.8rem;
+    height:.8rem;
+    border-radius:50%;
+    background:var(--accent);
+    flex-shrink:0;
+}
+
+.skill-card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:1rem;
+    padding:2.5rem 1.5rem;
+    background:var(--bg3);
+    border:1px solid transparent;
+    border-radius:1.2rem;
+    transition:.3s;
+}
+
+.skill-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-4px);
+}
+
+.skill-card .skill-icon{
+    width:4.5rem;
+    height:4.5rem;
+    color:var(--muted);
+    transition:.3s;
+}
+
+.skill-card:hover .skill-icon{
+    color:var(--accent);
+}
+
+.skill-card p{
+    font-size:1.4rem;
+    color:var(--text);
+    margin:0;
+    text-align:center;
+}
+
+/* =========================================================
+   ACHIEVEMENTS
+========================================================= */
+.achievements-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(30rem,1fr));
+    gap:2.5rem;
+}
+
+.achieve-card{
+    background:var(--bg3);
+    border:1px solid rgba(0,238,255,.12);
+    border-radius:1.5rem;
+    padding:2.8rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.5rem;
+    transition:.3s;
+}
+
+.achieve-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-5px);
+    box-shadow:0 1rem 3rem rgba(0,238,255,.15);
+}
+
+.achieve-icon-wrap{
+    width:5rem;
+    height:5rem;
+    border-radius:1rem;
+    background:var(--bg);
+    border:1px solid var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.6rem;
+    color:var(--accent);
+    flex-shrink:0;
+}
+
+.achieve-icon-wrap .icon{
+    width:2.7rem;
+    height:2.7rem;
+}
+
+.achieve-header{
+    display:flex;
+    align-items:center;
+    gap:1.5rem;
+}
+
+.achieve-header h3{
+    font-size:1.8rem;
+    color:var(--white);
+    line-height:1.3;
+    font-weight:600;
+}
+
+.achieve-meta{
+    font-size:1.25rem;
+    color:var(--muted);
+    margin-bottom:.5rem;
+    display:flex;
+    gap:.5rem;
+    align-items:center;
+}
+
+.achieve-meta .icon{
+    width:1.5rem;
+    height:1.5rem;
+}
+
+.achieve-card>p{
+    flex:1;
+}
+
+.achieve-header > div:last-child{
+    min-width:0;
+}
+
+.achieve-action{
+    width:100%;
+    margin-top:auto;
+    min-height:4.8rem;
+}
+
+.achieve-action .icon{
+    width:1.8rem;
+    height:1.8rem;
+}
+
+@media(max-width:480px){
+    .achieve-card{
+        padding:2.2rem;
+    }
+
+    .achieve-header{
+        align-items:flex-start;
+    }
+}
+
+/* =========================================================
+   PORTFOLIO
+========================================================= */
+.portfolio-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(28rem,1fr));
+    gap:2rem;
+}
+
+.project-card{
+    background:var(--bg3);
+    border:1px solid transparent;
+    border-radius:1.2rem;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    transition:.3s;
+    position:relative;
+}
+
+.project-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-5px);
+    box-shadow:0 12px 30px rgba(0,0,0,.35);
+}
+
+.project-img{
+    width:100%;
+    height:18rem;
+    overflow:hidden;
+    flex-shrink:0;
+}
+
+.project-img img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transition:.5s;
+}
+
+.project-card:hover .project-img img{
+    transform:scale(1.08);
+}
+
+.project-body{
+    padding:2rem;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+}
+
+.project-title{
+    font-size:1.8rem;
+    font-weight:700;
+    color:var(--white);
+    margin-bottom:.8rem;
+}
+
+.project-body>p{
+    flex:1;
+}
+
+.tech-tags{
+    margin-top:1.2rem;
+    padding-top:1.2rem;
+    border-top:1px solid rgba(255,255,255,.07);
+    font-size:1.25rem;
+    color:var(--accent);
+    font-weight:500;
+}
+
+.project-links{
+    display:flex;
+    gap:1rem;
+    margin-top:1.5rem;
+}
+
+.project-links a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:3.8rem;
+    height:3.8rem;
+    background:var(--bg);
+    border-radius:50%;
+    color:var(--white);
+    font-size:1.8rem;
+    transition:.3s;
+}
+
+.project-links a:hover{
+    background:var(--accent);
+    color:var(--bg);
+}
+
+.project-links .icon{
+    width:1.8rem;
+    height:1.8rem;
+}
+
+.best-badge{
+    position:absolute;
+    top:1.5rem;
+    right:1.5rem;
+    background:var(--accent);
+    color:var(--bg);
+    padding:.5rem 1.2rem;
+    border-radius:10rem;
+    font-size:1.15rem;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    box-shadow:0 0 1.5rem rgba(0,238,255,.5);
+    z-index:2;
+}
+
+/* =========================================================
+   BLOG
+========================================================= */
+.blog-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(28rem,1fr));
+    gap:2.5rem;
+}
+
+.blog-card{
+    background:var(--bg3);
+    border:1px solid rgba(0,238,255,.12);
+    border-radius:1.5rem;
+    padding:2.8rem;
+    display:flex;
+    flex-direction:column;
+    gap:1.5rem;
+    transition:.3s;
+}
+
+.blog-card:hover{
+    border-color:var(--accent);
+    transform:translateY(-5px);
+    box-shadow:0 1rem 3rem rgba(0,238,255,.15);
+}
+
+.blog-icon-wrap{
+    width:5rem;
+    height:5rem;
+    border-radius:1rem;
+    background:var(--bg);
+    border:1px solid var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.6rem;
+    color:var(--accent);
+    flex-shrink:0;
+}
+
+.blog-icon-wrap .icon{
+    width:2.7rem;
+    height:2.7rem;
+}
+
+.blog-header{
+    display:flex;
+    align-items:center;
+    gap:1.5rem;
+}
+
+.blog-header h3{
+    font-size:1.8rem;
+    color:var(--white);
+    line-height:1.3;
+    font-weight:600;
+}
+
+.blog-meta{
+    font-size:1.25rem;
+    color:var(--muted);
+}
+
+.blog-card>p{
+    flex:1;
+}
+
+/* =========================================================
+   BLOG MODALS
+========================================================= */
+.blog-modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:8888;
+    background:rgba(10,14,20,.92);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    overflow-y:auto;
+    padding:4rem 2rem 14rem;
+    opacity:0;
+    visibility:hidden;
+    transition:.35s;
+}
+
+.blog-modal-overlay.open{
+    opacity:1;
+    visibility:visible;
+}
+
+.modal-card{
+    background:var(--bg3);
+    border:1px solid var(--accent);
+    border-radius:2rem;
+    padding:4rem;
+    width:100%;
+    max-width:800px;
+    box-shadow:0 0 6rem rgba(0,238,255,.15);
+    transform:translateY(30px);
+    transition:.4s;
+}
+
+.blog-modal-overlay.open .modal-card{
+    transform:translateY(0);
+}
+
+.modal-header{
+    display:flex;
+    align-items:center;
+    gap:1.8rem;
+    padding-bottom:2rem;
+    margin-bottom:2.5rem;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.modal-header-text h3{
+    font-size:2.2rem;
+    font-weight:700;
+    color:var(--white);
+    line-height:1.3;
+}
+
+.modal-header-text .blog-meta{
+    margin-top:.4rem;
+}
+
+.modal-steps{
+    display:flex;
+    flex-direction:column;
+}
+
+.step-item{
+    display:flex;
+    gap:2rem;
+    padding:2rem 0;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    counter-increment:steps;
+}
+
+.step-item:last-child{
+    border-bottom:none;
+}
+
+.modal-steps{
+    counter-reset:steps;
+}
+
+.step-num{
+    width:3.4rem;
+    height:3.4rem;
+    background:var(--accent-dim);
+    border:1.5px solid var(--accent);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent);
+    flex-shrink:0;
+}
+
+.step-num::before{
+    content:counter(steps);
+}
+
+.step-content{
+    flex:1;
+}
+
+.step-content strong{
+    display:block;
+    font-size:1.55rem;
+    color:var(--white);
+    margin-bottom:.8rem;
+}
+
+.step-content p{
+    font-size:1.4rem;
+    margin:0;
+}
+
+code{
+    display:inline-block;
+    background:var(--bg);
+    color:var(--accent);
+    font-family:"Courier New",monospace;
+    font-size:1.35rem;
+    padding:.5rem 1rem;
+    border-radius:.5rem;
+    border:1px solid rgba(0,238,255,.2);
+    margin-top:.8rem;
+    word-break:break-all;
+}
+
+.modal-back{
+    margin-top:3rem;
+}
+
+/* =========================================================
+   CONTACT
+========================================================= */
+.contact-box{
+    max-width:75rem;
+    margin:0 auto;
+    text-align:center;
+}
+
+.contact-box>p{
+    font-size:1.6rem;
+    margin-bottom:3rem;
+}
+
+.form-grid{
+    display:flex;
+    flex-direction:column;
+    gap:1.5rem;
+}
+
+.input-row{
+    display:flex;
+    gap:1.5rem;
+}
+
+.form-input{
+    width:100%;
+    padding:1.4rem 1.8rem;
+    background:var(--bg3);
+    color:var(--white);
+    border-radius:1rem;
+    font-size:1.5rem;
+    border:1.5px solid transparent;
+    transition:.3s;
+}
+
+.form-input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 1.5rem rgba(0,238,255,.15);
+}
+
+textarea.form-input{
+    resize:none;
+    height:18rem;
+}
+
+.submit-btn{
+    align-self:center;
+    margin-top:.5rem;
+    font-size:1.6rem;
+    padding:1.3rem 4rem;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+@media(max-width:768px){
+
+    html{
+        font-size:55%;
+    }
+
+    .scroll-wrap{
+        padding:4rem 5% 12rem;
+        justify-content:flex-start;
+        padding-top:5rem;
+    }
+
+    .home-grid{
+        flex-direction:column-reverse;
+        text-align:center;
+        gap:3rem;
+    }
+
+    .home-avatar{
+        width:23rem;
+        height:23rem;
+    }
+
+    .btn-row{
+        justify-content:center;
+    }
+
+    .social-row{
+        justify-content:center;
+    }
+
+    .about-grid{
+        flex-direction:column;
+        text-align:center;
+        gap:3rem;
+    }
+
+    .about-photos{
+        width:100%;
+        max-width:42rem;
+        flex-basis:36rem;
+    }
+
+    .about-photo{
+        width:22rem;
+        height:28rem;
+    }
+
+    .about-text h2{
+        text-align:center;
+    }
+
+    .about-text .btn{
+        margin:2rem auto 0;
+    }
+
+    .tab-bar{
+        flex-wrap:wrap;
+    }
+
+    .tab-btn{
+        flex:1 1 30%;
+        font-size:1.3rem;
+        padding:1rem .5rem;
+    }
+
+    .input-row{
+        flex-direction:column;
+    }
+
+    .modal-card{
+        padding:2.5rem 2rem;
+    }
+
+    .modal-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:1rem;
+    }
+
+    .section-title{
+        margin-bottom:3rem;
+    }
+}
+
+@media(max-width:480px){
+
+    html{
+        font-size:50%;
+    }
+
+    .portfolio-grid,
+    .blog-grid,
+    .achievements-grid{
+        grid-template-columns:1fr;
+    }
+
+    .skill-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .nav{
+        width:98%;
+        padding:1rem 0;
+    }
+
+    .nav-item{
+        width:3.8rem;
+        height:3.8rem;
+        font-size:2rem;
+    }
+
+    .nav-item .icon{
+        width:2rem;
+        height:2rem;
+    }
+
+    .home-avatar{
+        width:21rem;
+        height:21rem;
+    }
+
+    .about-photos{
+        min-height:31rem;
+    }
+
+    .about-photo{
+        width:18rem;
+        height:24rem;
+    }
+}
+
+/* ===================== CONTACT PERSONAL DETAILS ===================== */
+
+.contact-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.contact-detail {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 1.6rem;
+    background: var(--bg3);
+    border: 1px solid rgba(0, 238, 255, 0.12);
+    border-radius: 1.2rem;
+    text-align: left;
+    transition: 0.3s ease;
+}
+
+.contact-detail:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 0 2rem rgba(0, 238, 255, 0.12);
+}
+
+.contact-detail-icon {
+    width: 4.8rem;
+    height: 4.8rem;
+    min-width: 4.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-dim);
+    border: 1px solid rgba(0, 238, 255, 0.3);
+    border-radius: 1rem;
+    color: var(--accent);
+    font-size: 2.4rem;
+}
+
+.contact-detail-info {
+    min-width: 0;
+}
+
+.contact-detail-info small {
+    display: block;
+    color: var(--muted);
+    font-size: 1.15rem;
+    margin-bottom: 0.3rem;
+}
+
+.contact-detail-info strong {
+    display: block;
+    color: var(--white);
+    font-size: 1.4rem;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.contact-detail-info a {
+    color: var(--white);
+    transition: color 0.3s;
+}
+
+.contact-detail-info a:hover {
+    color: var(--accent);
+}
+
+@media (max-width: 600px) {
+    .contact-details {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===================== PROFILE PHOTO ===================== */
+
+.avatar {
+    width: clamp(22rem, 32vw, 34rem);
+    height: clamp(22rem, 32vw, 34rem);
+    border-radius: 50%;
+    border: 4px solid var(--accent);
+    box-shadow: 0 0 3rem rgba(0, 238, 255, 0.4);
+    overflow: hidden;
+    background: var(--bg);
+    transition: box-shadow 0.4s, transform 0.3s;
+    
+    /* Keeps the image centered */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar:hover {
+    box-shadow: 0 0 6rem rgba(0, 238, 255, 0.6);
+    transform: scale(1.03);
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     INLINE SVG ICON DEFINITIONS
+     No external icon library required.
+========================================================= -->
+<svg width="0" height="0" style="position:absolute">
+<symbol id="i-home" viewBox="0 0 24 24">
+    <path d="M3 10.5 12 3l9 7.5"/>
+    <path d="M5 9.5V21h14V9.5"/>
+    <path d="M9 21v-6h6v6"/>
+</symbol>
+
+<symbol id="i-user" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 21c.8-4 3.4-6 8-6s7.2 2 8 6"/>
+</symbol>
+
+<symbol id="i-resume" viewBox="0 0 24 24">
+    <rect x="5" y="3" width="14" height="18" rx="2"/>
+    <path d="M9 3v3h6V3"/>
+    <path d="M8 11h8M8 15h6M8 18h4"/>
+</symbol>
+
+<symbol id="i-trophy" viewBox="0 0 24 24">
+    <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/>
+    <path d="M8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4"/>
+    <path d="M12 13v5M8 21h8M9 18h6"/>
+</symbol>
+
+<symbol id="i-briefcase" viewBox="0 0 24 24">
+    <rect x="3" y="7" width="18" height="13" rx="2"/>
+    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>
+    <path d="M10 12v2h4v-2"/>
+</symbol>
+
+<symbol id="i-book" viewBox="0 0 24 24">
+    <path d="M4 5a3 3 0 0 1 3-2h13v17H7a3 3 0 0 0-3 3V5Z"/>
+    <path d="M4 20a3 3 0 0 1 3-3h13"/>
+    <path d="M8 7h8M8 11h6"/>
+</symbol>
+
+<symbol id="i-mail" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="14" rx="2"/>
+    <path d="m4 7 8 6 8-6"/>
+</symbol>
+
+<symbol id="i-download" viewBox="0 0 24 24">
+    <path d="M12 3v12"/>
+    <path d="m7 10 5 5 5-5"/>
+    <path d="M4 20h16"/>
+</symbol>
+
+<symbol id="i-arrow-right" viewBox="0 0 24 24">
+    <path d="M5 12h14"/>
+    <path d="m13 6 6 6-6 6"/>
+</symbol>
+
+<symbol id="i-arrow-left" viewBox="0 0 24 24">
+    <path d="M19 12H5"/>
+    <path d="m11 18-6-6 6-6"/>
+</symbol>
+
+<symbol id="i-external" viewBox="0 0 24 24">
+    <path d="M14 4h6v6"/>
+    <path d="M20 4 10 14"/>
+    <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/>
+</symbol>
+
+<symbol id="i-send" viewBox="0 0 24 24">
+    <path d="m21 3-7 18-4-8-8-4 19-6Z"/>
+    <path d="M10 13 21 3"/>
+</symbol>
+
+<symbol id="i-star" viewBox="0 0 24 24">
+    <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>
+</symbol>
+
+<symbol id="i-medal" viewBox="0 0 24 24">
+    <circle cx="12" cy="15" r="5"/>
+    <path d="m9 11-2-8h4l1 5 1-5h4l-2 8"/>
+    <path d="m10 15 1.3 1.3L14 13.7"/>
+</symbol>
+
+<symbol id="i-certificate" viewBox="0 0 24 24">
+    <circle cx="12" cy="9" r="6"/>
+    <path d="m9 15-1 6 4-2 4 2-1-6"/>
+    <path d="m9.5 9 1.5 1.5 3.5-3.5"/>
+</symbol>
+
+<symbol id="i-calendar" viewBox="0 0 24 24">
+    <rect x="3" y="5" width="18" height="16" rx="2"/>
+    <path d="M16 3v4M8 3v4M3 10h18"/>
+    <path d="m8 15 2 2 5-5"/>
+</symbol>
+
+<symbol id="i-map" viewBox="0 0 24 24">
+    <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/>
+    <circle cx="12" cy="10" r="2.5"/>
+</symbol>
+
+<symbol id="i-code" viewBox="0 0 24 24">
+    <path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>
+</symbol>
+
+<symbol id="i-check" viewBox="0 0 24 24">
+    <path d="m5 12 4 4L19 6"/>
+</symbol>
+
+<symbol id="i-youtube" viewBox="0 0 24 24">
+    <path d="M21.6 7.2a2.8 2.8 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.8 2.8 0 0 0-2 2C1.9 9 1.9 12 1.9 12s0 3 .5 4.8a2.8 2.8 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.8 2.8 0 0 0 2-2c.5-1.8.5-4.8.5-4.8s0-3-.5-4.8Z" />
+    <path d="m10 15.5 5-3.5-5-3.5v7Z" fill="currentColor" stroke="none" />
+</symbol>
+
+<symbol id="i-github" viewBox="0 0 24 24">
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.7-1.6 6.7-7A5.4 5.4 0 0 0 19.2 4 5 5 0 0 0 19 1s-1.2-.4-4 1.5a13.4 13.4 0 0 0-6 0C6.2.6 5 1 5 1a5 5 0 0 0-.2 3A5.4 5.4 0 0 0 3.3 7.5c0 5.4 3.4 6.6 6.7 7A4.8 4.8 0 0 0 9 18v4"/>
+    <path d="M9 18c-4.5 2-5-2-7-2"/>
+</symbol>
+
+<symbol id="i-instagram" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="5" ry="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="1" />
+</symbol>
+
+<svg class="icon"><use href="#i-instagram"/></svg>
+    <path d="M18 3h3l-6.5 7.4L22 21h-6l-4.7-6.1L6 21H3l6.8-7.8L3 3h6l4.3 5.6L18 3Z"/>
+</symbol>
+
+<symbol id="i-html" viewBox="0 0 24 24">
+    <path d="m4 3 1.5 17L12 22l6.5-2L20 3H4Z"/>
+    <path d="M7 7h10l-.4 3H8l.3 3H16l-.5 4-3.5 1-3.5-1-.2-2"/>
+</symbol>
+
+<symbol id="i-css" viewBox="0 0 24 24">
+    <path d="m4 3 1.5 17L12 22l6.5-2L20 3H4Z"/>
+    <path d="M7 7h10M7.5 11H16l-.5 5-3.5 1-3.5-1"/>
+</symbol>
+
+<symbol id="i-js" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18"/>
+    <path d="M8 17v1a2 2 0 0 0 4 0v-6M17 12h-1a2 2 0 0 0 0 4h1a2 2 0 0 1 0 4h-1a2 2 0 0 1-2-2"/>
+</symbol>
+
+<symbol id="i-react" viewBox="0 0 24 24">
+    <ellipse cx="12" cy="12" rx="9" ry="3"/>
+    <ellipse cx="12" cy="12" rx="9" ry="3" transform="rotate(60 12 12)"/>
+    <ellipse cx="12" cy="12" rx="9" ry="3" transform="rotate(120 12 12)"/>
+    <circle cx="12" cy="12" r="1.5"/>
+</symbol>
+
+<symbol id="i-tailwind" viewBox="0 0 24 24">
+    <path d="M3 12c1.5-4 4-6 7.5-6 5.2 0 4.5 4 7.5 4 1.2 0 2.2-.7 3-2"/>
+    <path d="M3 18c1.5-4 4-6 7.5-6 5.2 0 4.5 4 7.5 4 1.2 0 2.2-.7 3-2"/>
+</symbol>
+
+<symbol id="i-node" viewBox="0 0 24 24">
+    <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/>
+    <path d="m8 9 4-2 4 2v5l-4 2-4-2V9Z"/>
+</symbol>
+
+<symbol id="i-linux" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="5"/>
+    <path d="M7 11c-3 1-4 4-2 7 2 2 5 1 7 0 2 1 5 2 7 0 2-3 1-6-2-7"/>
+    <circle cx="10" cy="8" r=".7" class="icon-fill"/>
+    <circle cx="14" cy="8" r=".7" class="icon-fill"/>
+</symbol>
+
+<symbol id="i-git" viewBox="0 0 24 24">
+    <path d="M20.5 11.5 12.5 3.5a2 2 0 0 0-3 0l-7 7a2 2 0 0 0 0 3l8 8a2 2 0 0 0 3 0l7-7a2 2 0 0 0 0-3Z"/>
+    <path d="m7 10 5 5M12 15v4M12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+</symbol>
+</svg>
+
+<!-- =========================================================
+     NAVIGATION
+========================================================= -->
+<nav class="nav">
+<ul class="nav-list">
+
+<li class="nav-item active" onclick="goTo(0)" tabindex="0">
+    <svg class="icon"><use href="#i-home"/></svg>
+    <span class="tooltip">Home</span>
+</li>
+
+<li class="nav-item" onclick="goTo(1)" tabindex="0">
+    <svg class="icon"><use href="#i-user"/></svg>
+    <span class="tooltip">About</span>
+</li>
+
+<li class="nav-item" onclick="goTo(2)" tabindex="0">
+    <svg class="icon"><use href="#i-resume"/></svg>
+    <span class="tooltip">Resume</span>
+</li>
+
+<li class="nav-item" onclick="goTo(3)" tabindex="0">
+    <svg class="icon"><use href="#i-trophy"/></svg>
+    <span class="tooltip">Awards</span>
+</li>
+
+<li class="nav-item" onclick="goTo(4)" tabindex="0">
+    <svg class="icon"><use href="#i-briefcase"/></svg>
+    <span class="tooltip">Portfolio</span>
+</li>
+
+<li class="nav-item" onclick="goTo(5)" tabindex="0">
+    <svg class="icon"><use href="#i-book"/></svg>
+    <span class="tooltip">Blog</span>
+</li>
+
+<li class="nav-item" onclick="goTo(6)" tabindex="0">
+    <svg class="icon"><use href="#i-mail"/></svg>
+    <span class="tooltip">Contact</span>
+</li>
+
+</ul>
+</nav>
+
+<!-- =========================================================
+     3D SCENE
+========================================================= -->
+<div class="scene">
+<div class="cube" id="cube">
+
+<!-- =========================================================
+     HOME
+========================================================= -->
+<section class="face" id="face-0">
+<div class="scroll-wrap">
+<div class="content-box">
+
+<div class="home-grid">
+
+<div class="home-info">
+
+<p class="greeting">Hello, I'm</p>
+
+<h1>Bhut Herit</h1>
+
+<div class="typewriter-line">
+<span id="tw"></span><span class="cursor"></span>
+</div>
+
+<p class="home-desc">
+I'm a 15-year-old student at Eklavya Public School, deeply passionate about building interactive, accessible, and high-performance web applications. Transforming complex problems into elegant digital experiences is what I love most.
+</p>
+
+<div class="btn-row">
+
+<button class="btn" onclick="downloadCV()">
+<svg class="icon"><use href="#i-download"/></svg>
+Download CV
+</button>
+
+<div class="social-row">
+
+<a href="https://github.com/hj-developer745/" class="social-btn" title="GitHub">
+<svg class="icon"><use href="#i-github"/></svg>
+</a>
+
+<a href="https://youtube.com/@hjdeveloper12?si=6KjNmcYqWEzBZWZp" class="social-btn" title="YouTube">
+    <svg class="icon"><use href="#i-youtube"/></svg>
+</a>
+
+<a href="https://www.instagram.com/bhut_herit_6004?igsi=anpmY2t5dzZvMGV2" class="social-btn" title="Instagram">
+    <svg class="icon"><use href="#i-instagram"/></svg>
+</a>
+
+</div>
+</div>
+
+</div>
+
+<div class="home-avatar-wrap">
+<div class="home-avatar">
+<img src="/file_00000000dd8082118460c397d52ac206.png" alt="Bhut Herit">
+</div>
+</div>
+
+
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     ABOUT
+========================================================= -->
+<section class="face" id="face-1">
+<div class="scroll-wrap">
+<div class="content-box">
+
+<div class="about-grid">
+
+<div class="about-photos">
+
+<div class="about-photo one">
+<img src="/file_00000000a72c82118adc5f91fe1b6d37.png" alt="Bhut Herit">
+</div>
+
+<div class="about-photo two">
+<img src="/DSC_6884.JPG" alt="Bhut Herit Coding">
+</div>
+
+</div>
+
+<div class="about-text">
+
+<h2>About <span>Me</span></h2>
+
+<h3>15 Y/O Developer & Student</h3>
+
+<p>
+Hello! I am currently studying at Eklavya Public School and have a burning passion for code. With a keen eye for aesthetics and a strong foundation in modern web technologies, I specialize in crafting engaging user interfaces. My journey started with a simple curiosity for how things work, turning rapidly into advanced projects like 3D web environments and complex structural layouts.
+</p>
+
+<button class="btn" onclick="goTo(2)" style="margin-top:2.5rem;">
+View Experience
+<svg class="icon"><use href="#i-arrow-right"/></svg>
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     RESUME
+========================================================= -->
+<section class="face" id="face-2">
+<div class="scroll-wrap align-start">
+<div class="content-box">
+
+<h2 class="section-title">My <span>Resume</span></h2>
+
+<div class="tab-bar">
+
+<button class="tab-btn active" onclick="switchTab(this,'exp')">
+Experience
+</button>
+
+<button class="tab-btn" onclick="switchTab(this,'skills')">
+Skills
+</button>
+
+<button class="tab-btn" onclick="switchTab(this,'edu')">
+Education
+</button>
+
+</div>
+
+<div class="tab-panel active cards-grid" id="tab-exp">
+
+<div class="card">
+<div class="card-date">Present</div>
+<div class="card-title">Self-Taught Developer</div>
+<div class="card-sub">Personal Projects</div>
+<p>
+Continuously exploring cutting-edge web capabilities. Building dynamic web apps and experimenting with 3D models & animations via web technologies.
+</p>
+</div>
+
+<div class="card">
+<div class="card-date">2023</div>
+<div class="card-title">Freelance Coder</div>
+<div class="card-sub">Independent</div>
+<p>
+Developed custom responsive portfolios and tools for fellow students and local clubs, ensuring high performance and great user experience.
+</p>
+</div>
+
+</div>
+
+<div class="tab-panel skill-grid" id="tab-skills">
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-html"/></svg>
+<p>HTML5</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-css"/></svg>
+<p>CSS3 / 3D</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-js"/></svg>
+<p>JavaScript</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-react"/></svg>
+<p>React.js</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-tailwind"/></svg>
+<p>Tailwind</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-node"/></svg>
+<p>Node.js</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-linux"/></svg>
+<p>Linux</p>
+</div>
+
+<div class="skill-card">
+<svg class="skill-icon icon"><use href="#i-git"/></svg>
+<p>Git / GitHub</p>
+</div>
+
+</div>
+
+<div class="tab-panel cards-grid" id="tab-edu">
+
+<div class="card">
+<div class="card-date">Current</div>
+<div class="card-title">High School Student</div>
+<div class="card-sub">Eklavya Public School</div>
+<p>
+Balancing core academics while heavily focusing on computer science, physics, and advanced mathematics.
+</p>
+</div>
+
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     ACHIEVEMENTS
+========================================================= -->
+<section class="face" id="face-3">
+<div class="scroll-wrap align-start">
+<div class="content-box">
+
+<h2 class="section-title">
+My <span>Achievements</span>
+</h2>
+
+<div class="achievements-grid">
+
+<div class="achieve-card">
+    <div class="achieve-header">
+        <div class="achieve-icon-wrap">
+            <svg class="icon"><use href="#i-certificate"/></svg>
+        </div>
+        <div>
+            <h3>Claude code in action </h3>
+            <div class="achieve-meta">
+                <svg class="icon"><use href="#i-calendar"/></svg>
+                Issued by Anthropic 
+            </div>
+        </div>
+    </div>
+
+    <p>
+        Completed a comprehensive certification on responsive design, dynamic UIs, and state management.
+    </p>
+
+<button class="btn btn-outline"
+        type="button"
+        style="width:100%;"
+        onclick="window.open('/certificate-hvga8tojca8e-1778488234.pdf', '_blank', 'noopener')">
+    <svg class="icon"><use href="#i-certificate"/></svg>
+    View Certificate
+</button>
+
+
+
+
+    
+</div>
+
+<div class="achieve-card">
+    <div class="achieve-header">
+        <div class="achieve-icon-wrap">
+            <svg class="icon"><use href="#i-trophy"/></svg>
+        </div>
+        <div>
+            <h3>AI Fluency for student</h3>
+            <div class="achieve-meta">
+                <svg class="icon"><use href="#i-map"/></svg>
+                Issued by Anthropic
+            </div>
+        </div>
+    </div>
+
+    <p>
+        AI fluency means understanding how to use Artificial Intelligence effectively and responsibly. Students can use AI to learn new topics, solve problems.
+    </p>
+
+<button class="btn btn-outline"
+        type="button"
+        style="width:100%;"
+        onclick="window.open('/certificate-jurac3bnczk6-1778491216.pdf', '_blank', 'noopener')">
+    <svg class="icon"><use href="#i-certificate"/></svg>
+    View Certificate
+</button>
+
+
+    
+</div>
+
+<div class="achieve-card">
+    <div class="achieve-header">
+        <div class="achieve-icon-wrap">
+            <svg class="icon"><use href="#i-medal"/></svg>
+        </div>
+        <div>
+            <h3>Claude with anthropic API</h3>
+            <div class="achieve-meta">
+                <svg class="icon"><use href="#i-star"/></svg>
+               Issued by Anthropic
+            </div>
+        </div>
+    </div>
+
+    <p>
+        Achieved top 5% ranking in competitive programming challenges focusing on sorting algorithms and data structures.
+    </p>
+
+<button class="btn btn-outline"
+        type="button"
+        style="width:100%;"
+        onclick="window.open('/certificate-i8ubknvq7b2a-1778488783.pdf', '_blank', 'noopener')">
+    <svg class="icon"><use href="#i-certificate"/></svg>
+    View Certificate
+</button>
+
+
+    
+</div>
+
+<div class="achieve-card">
+
+<div class="achieve-header">
+
+<div class="achieve-icon-wrap">
+<svg class="icon"><use href="#i-certificate"/></svg>
+</div>
+
+<h3>Introduction to Generative AI</h3>
+
+</div>
+
+<div class="achieve-meta">
+<svg class="icon"><use href="#i-star"/></svg>
+Frontend Development
+</div>
+
+<p>
+Recognized for strong JavaScript skills, interactive web development, and building responsive user experiences.
+</p>
+
+<button class="btn btn-outline"
+        type="button"
+        style="width:100%;"
+        onclick="window.open('/11014378_Introduction_to_Generative_AI_10666493.pdf', '_blank', 'noopener')">
+    <svg class="icon"><use href="#i-certificate"/></svg>
+    View Certificate
+</button>
+
+
+
+
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     PORTFOLIO
+========================================================= -->
+<section class="face" id="face-4">
+<div class="scroll-wrap align-start">
+<div class="content-box">
+
+<h2 class="section-title">
+My <span>Portfolio</span>
+</h2>
+
+<div class="portfolio-grid">
+
+<!-- 1 -->
+<div class="project-card">
+
+<span class="best-badge">
+<svg class="icon"><use href="#i-star"/></svg>
+Best Project
+</span>
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1614742616239-0824b223405c?q=80&w=800&auto=format&fit=crop" alt="Bhagavad Gita App">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Bhagavad Gita App
+</div>
+
+<p>
+An immersive digital experience of the sacred text with detailed translations, chapter insights, audio verses, and a calming UI.
+</p>
+
+<div class="tech-tags">
+React · Node.js · Web Audio API
+</div>
+
+<div class="project-links">
+<a href="#">
+<svg class="icon"><use href="#i-external"/></svg>
+</a>
+<a href="#">
+<svg class="icon"><use href="#i-github"/></svg>
+</a>
+</div>
+
+</div>
+</div>
+
+<!-- 2 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800&auto=format&fit=crop" alt="E-Commerce">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+E-Commerce Platform
+</div>
+
+<p>
+A full-stack online store with payment gateway integration, item filtering, cart persistence, and real-time inventory.
+</p>
+
+<div class="tech-tags">
+Next.js · Tailwind CSS · Stripe
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 3 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" alt="Dashboard">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Data Dashboard UI
+</div>
+
+<p>
+Interactive real-time analytics dashboard with dynamic charts, dark mode, and advanced filter controls.
+</p>
+
+<div class="tech-tags">
+React · Chart.js · CSS Grid
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 4 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop" alt="3D Portfolio">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+3D Web Portfolio
+</div>
+
+<p>
+Immersive 3D cube navigation built purely using CSS transforms, preserve-3d, and vanilla JavaScript.
+</p>
+
+<div class="tech-tags">
+HTML · CSS3 3D · JavaScript
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 5 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1512314889357-e157c22f938d?q=80&w=800&auto=format&fit=crop" alt="Task Manager">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Task Master Pro
+</div>
+
+<p>
+A Kanban-style task management platform with drag-and-drop boards, column reordering, and cloud syncing.
+</p>
+
+<div class="tech-tags">
+Vue.js · Firebase · SortableJS
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 6 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?q=80&w=800&auto=format&fit=crop" alt="Weather">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Weather Insights
+</div>
+
+<p>
+Real-time weather tracking with dynamic backgrounds, 7-day forecast, and location auto-detect.
+</p>
+
+<div class="tech-tags">
+JavaScript · OpenWeather API
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 7 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=800&auto=format&fit=crop" alt="Chat">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Real-Time Chat Room
+</div>
+
+<p>
+Socket-driven multi-room chat app with active user lists, custom avatars, and message history.
+</p>
+
+<div class="tech-tags">
+Socket.io · Express · React
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 8 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=800&auto=format&fit=crop" alt="Recipe">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Culinary Recipe Finder
+</div>
+
+<p>
+Search 10,000+ recipes by ingredient, view nutritional stats, and bookmark your favorites.
+</p>
+
+<div class="tech-tags">
+Vanilla JS · Edamam API
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 9 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800&auto=format&fit=crop" alt="Fitness">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Fitness Progress Tracker
+</div>
+
+<p>
+Record daily workouts, calculate calorie expenditure, and visualize progress over time.
+</p>
+
+<div class="tech-tags">
+MERN Stack
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+<!-- 10 -->
+<div class="project-card">
+
+<div class="project-img">
+<img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop" alt="Movie">
+</div>
+
+<div class="project-body">
+
+<div class="project-title">
+Movie Search Engine
+</div>
+
+<p>
+Explore movies with ratings, genre filters, HD trailers, and curated recommendation lists.
+</p>
+
+<div class="tech-tags">
+React · TMDB API · Styled Components
+</div>
+
+<div class="project-links">
+<a href="#"><svg class="icon"><use href="#i-external"/></svg></a>
+<a href="#"><svg class="icon"><use href="#i-github"/></svg></a>
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     BLOG
+========================================================= -->
+<section class="face" id="face-5">
+<div class="scroll-wrap align-start">
+<div class="content-box">
+
+<h2 class="section-title">
+My <span>Blog</span>
+</h2>
+
+<div class="blog-grid">
+
+<div class="blog-card">
+
+<div class="blog-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-linux"/></svg>
+</div>
+
+<h3>Install Ubuntu on Mobile</h3>
+
+</div>
+
+<div class="blog-meta">
+Ubuntu • Android / Linux • 4 min read
+</div>
+
+<p>
+Run a full Ubuntu OS terminal setup on your Android device using Termux — no root needed.
+</p>
+
+<button class="btn btn-outline" onclick="openModal('ubuntu')">
+Read Guide
+<svg class="icon"><use href="#i-arrow-right"/></svg>
+</button>
+
+</div>
+
+<div class="blog-card">
+
+<div class="blog-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-code"/></svg>
+</div>
+
+<h3>Install VSCode on Mobile</h3>
+
+</div>
+
+<div class="blog-meta">
+VSCode • Code-Server • 5 min read
+</div>
+
+<p>
+Set up Code-Server inside Linux on your Android phone to access full VS Code in your mobile browser.
+</p>
+
+<button class="btn btn-outline" onclick="openModal('vscode')">
+Read Guide
+<svg class="icon"><use href="#i-arrow-right"/></svg>
+</button>
+
+</div>
+
+<div class="blog-card">
+
+<div class="blog-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-linux"/></svg>
+</div>
+
+<h3>Install Debian on Mobile</h3>
+
+</div>
+
+<div class="blog-meta">
+Debian • Lightweight Linux • 4 min read
+</div>
+
+<p>
+Deploy a lightweight, rock-solid Debian Linux environment directly onto your phone with ease.
+</p>
+
+<button class="btn btn-outline" onclick="openModal('debian')">
+Read Guide
+<svg class="icon"><use href="#i-arrow-right"/></svg>
+</button>
+
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+     CONTACT
+========================================================= -->
+<!-- FACE 6: CONTACT -->
+<section class="face" id="face-6">
+    <div class="scroll-wrap align-start">
+        <div class="content-box">
+
+            <h2 class="section-title">
+                Contact <span>Me</span>
+            </h2>
+
+            <div class="contact-box">
+
+                <p>
+                    Have a project in mind or just want to say hi?
+                    Feel free to send me a message!
+                </p>
+
+                <!-- PERSONAL CONTACT DETAILS -->
+                <div class="contact-details">
+
+                    <!-- Phone -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-phone"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>Phone</small>
+                            <strong>
+                                <a href="tel:+919909981260">
+                                    +91 9909981260
+                                </a>
+                            </strong>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-envelope"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>Email</small>
+                            <strong>
+                                <a href="mailto:bhuthg1212@gmail.com">
+                                    bhuthg1212@gmail.com
+                                </a>
+                            </strong>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-map"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>Location</small>
+                            <strong>Junagadh, Gujarat, India</strong>
+                        </div>
+                    </div>
+
+                    <!-- School -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-book-open"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>School</small>
+                            <strong>Eklavya Public School</strong>
+                        </div>
+                    </div>
+
+                    <!-- Age -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-user"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>Age</small>
+                            <strong>15 Years Old</strong>
+                        </div>
+                    </div>
+
+                    <!-- Role -->
+                    <div class="contact-detail">
+                        <div class="contact-detail-icon">
+                            <i class="bx bx-code-alt"></i>
+                        </div>
+
+                        <div class="contact-detail-info">
+                            <small>Role</small>
+                            <strong>Web Developer</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CONTACT FORM -->
+                <form class="form-grid" onsubmit="handleSubmit(event)">
+
+                    <div class="input-row">
+
+                        <input
+                            class="form-input"
+                            type="text"
+                            placeholder="Full Name"
+                            required
+                        >
+
+                        <input
+                            class="form-input"
+                            type="email"
+                            placeholder="Email Address"
+                            required
+                        >
+
+                    </div>
+
+                    <div class="input-row">
+
+                        <input
+                            class="form-input"
+                            type="tel"
+                            placeholder="Mobile Number"
+                        >
+
+                        <input
+                            class="form-input"
+                            type="text"
+                            placeholder="Subject"
+                            required
+                        >
+
+                    </div>
+
+                    <textarea
+                        class="form-input"
+                        placeholder="Your Message"
+                        required
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        class="btn submit-btn"
+                    >
+                        Send Message
+                        <i class="bx bx-send"></i>
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+</div>
+</div>
+
+<!-- =========================================================
+     UBUNTU MODAL
+========================================================= -->
+<div class="blog-modal-overlay" id="modal-ubuntu" onclick="closeOnOverlay(event,'ubuntu')">
+
+<div class="modal-card">
+
+<div class="modal-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-linux"/></svg>
+</div>
+
+<div class="modal-header-text">
+<h3>How to Install Ubuntu on Mobile</h3>
+<div class="blog-meta">
+Termux Guide • By Bhut Herit • 4 min read
+</div>
+</div>
+
+</div>
+
+<div class="modal-steps">
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Termux</strong>
+<p>
+Download the latest Termux APK from F-Droid — avoid the Play Store version as it's outdated and unmaintained.
+</p>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Update Termux Packages</strong>
+<p>Sync repositories to the latest versions.</p>
+<code>pkg update && pkg upgrade -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install PRoot-Distro</strong>
+<p>
+This utility manages Linux environments without root access.
+</p>
+<code>pkg install proot-distro -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Ubuntu</strong>
+<p>Install Ubuntu inside Termux.</p>
+<code>proot-distro install ubuntu</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Launch Ubuntu</strong>
+<p>Enter your Ubuntu environment.</p>
+<code>proot-distro login ubuntu</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Update Ubuntu System</strong>
+<p>Update Ubuntu packages.</p>
+<code>apt update && apt upgrade -y</code>
+</div>
+</div>
+
+</div>
+
+<button class="btn btn-outline modal-back" onclick="closeModal('ubuntu')">
+<svg class="icon"><use href="#i-arrow-left"/></svg>
+Back to Blogs
+</button>
+
+</div>
+</div>
+
+<!-- =========================================================
+     VSCODE MODAL
+========================================================= -->
+<div class="blog-modal-overlay" id="modal-vscode" onclick="closeOnOverlay(event,'vscode')">
+
+<div class="modal-card">
+
+<div class="modal-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-code"/></svg>
+</div>
+
+<div class="modal-header-text">
+<h3>How to Install VSCode on Mobile</h3>
+<div class="blog-meta">
+Code-Server Guide • By Bhut Herit • 5 min read
+</div>
+</div>
+
+</div>
+
+<div class="modal-steps">
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Launch Your Linux Environment</strong>
+<p>Open Termux and log into Ubuntu or Debian.</p>
+<code>proot-distro login ubuntu</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Required Tools</strong>
+<p>Install curl.</p>
+<code>apt update && apt install curl -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Code-Server</strong>
+<p>Install Code-Server.</p>
+<code>curl -fsSL https://code-server.dev/install.sh | sh</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Start the VSCode Server</strong>
+<p>Launch Code-Server.</p>
+<code>code-server --bind-addr 127.0.0.1:8080</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Open in Your Mobile Browser</strong>
+<p>Open your browser and navigate to:</p>
+<code>http://localhost:8080</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Enter Your Password</strong>
+<p>Find the generated password.</p>
+<code>cat ~/.config/code-server/config.yaml</code>
+</div>
+</div>
+
+</div>
+
+<button class="btn btn-outline modal-back" onclick="closeModal('vscode')">
+<svg class="icon"><use href="#i-arrow-left"/></svg>
+Back to Blogs
+</button>
+
+</div>
+</div>
+
+<!-- =========================================================
+     DEBIAN MODAL
+========================================================= -->
+<div class="blog-modal-overlay" id="modal-debian" onclick="closeOnOverlay(event,'debian')">
+
+<div class="modal-card">
+
+<div class="modal-header">
+
+<div class="blog-icon-wrap">
+<svg class="icon"><use href="#i-linux"/></svg>
+</div>
+
+<div class="modal-header-text">
+<h3>How to Install Debian on Mobile</h3>
+<div class="blog-meta">
+Debian Guide • By Bhut Herit • 4 min read
+</div>
+</div>
+
+</div>
+
+<div class="modal-steps">
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Open Termux & Update</strong>
+<p>Refresh Termux packages.</p>
+<code>pkg update -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install PRoot-Distro</strong>
+<p>Install the Linux environment manager.</p>
+<code>pkg install proot-distro -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Debian</strong>
+<p>Install Debian.</p>
+<code>proot-distro install debian</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Boot into Debian</strong>
+<p>Enter Debian.</p>
+<code>proot-distro login debian</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>Install Dev Tools</strong>
+<p>Install Git, Curl and build tools.</p>
+<code>apt update && apt install git curl build-essential -y</code>
+</div>
+</div>
+
+<div class="step-item">
+<div class="step-num"></div>
+<div class="step-content">
+<strong>You're Done!</strong>
+<p>
+You now have a clean Debian environment running directly on Android.
+</p>
+</div>
+</div>
+
+</div>
+
+<button class="btn btn-outline modal-back" onclick="closeModal('debian')">
+<svg class="icon"><use href="#i-arrow-left"/></svg>
+Back to Blogs
+</button>
+
+</div>
+</div>
+
+<script>
+/* =========================================================
+   TYPEWRITER
+========================================================= */
+const words=[
+    "Frontend Developer",
+    "15 Y/O Coder",
+    "Student @ Eklavya",
+    "Tech Enthusiast"
+];
+
+let wi=0;
+let ci=0;
+let del=false;
+
+function tw(){
+
+    const w=words[wi % words.length];
+    const el=document.getElementById("tw");
+
+    if(!el)return;
+
+    if(del){
+        ci--;
+        el.textContent=w.slice(0,ci);
+    }else{
+        ci++;
+        el.textContent=w.slice(0,ci);
+    }
+
+    let speed=del?50:100;
+
+    if(!del && ci===w.length){
+        speed=2000;
+        del=true;
+    }
+
+    if(del && ci===0){
+        del=false;
+        wi++;
+        speed=500;
+    }
+
+    setTimeout(tw,speed);
+}
+
+tw();
+
+/* =========================================================
+   DOWNLOAD CV
+========================================================= */
+function downloadCV(){
+
+const txt=
+`BHUT HERIT — CURRICULUM VITAE
+========================================
+
+Role: Frontend Developer
+Age: 15 Years Old
+School: Eklavya Public School
+
+SKILLS
+------
+HTML5
+CSS3 / 3D
+JavaScript
+React.js
+Tailwind CSS
+Node.js
+Linux
+Git / GitHub
+
+EXPERIENCE
+----------
+Present – Self-Taught Developer
+2023 – Freelance Coder
+
+EDUCATION
+---------
+High School – Eklavya Public School
+`;
+
+const blob=new Blob([txt],{
+    type:"text/plain"
+});
+
+const url=URL.createObjectURL(blob);
+
+const a=document.createElement("a");
+a.href=url;
+a.download="Bhut_Herit_CV.txt";
+
+document.body.appendChild(a);
+a.click();
+a.remove();
+
+URL.revokeObjectURL(url);
+}
+
+/* =========================================================
+   CONTACT FORM
+========================================================= */
+function handleSubmit(e){
+
+e.preventDefault();
+
+const btn=e.target.querySelector(".submit-btn");
+
+btn.innerHTML=
+`
+<svg class="icon"><use href="#i-check"/></svg>
+Message Sent!
+`;
+
+btn.style.background="#28a745";
+btn.style.boxShadow="0 0 2rem rgba(40,167,69,.5)";
+
+setTimeout(()=>{
+
+btn.innerHTML=
+`
+Send Message
+<svg class="icon"><use href="#i-send"/></svg>
+`;
+
+btn.style.background="";
+btn.style.boxShadow="";
+
+e.target.reset();
+
+},3000);
+}
+
+/* =========================================================
+   RESUME TABS
+========================================================= */
+function switchTab(btn,id){
+
+document.querySelectorAll(".tab-btn")
+.forEach(b=>b.classList.remove("active"));
+
+document.querySelectorAll(".tab-panel")
+.forEach(p=>p.classList.remove("active"));
+
+btn.classList.add("active");
+
+document.getElementById("tab-"+id)
+.classList.add("active");
+}
+
+/* =========================================================
+   BLOG MODALS
+========================================================= */
+function openModal(id){
+
+const modal=document.getElementById("modal-"+id);
+
+if(modal){
+    modal.classList.add("open");
+    modal.scrollTop=0;
+}
+
+}
+
+function closeModal(id){
+
+const modal=document.getElementById("modal-"+id);
+
+if(modal){
+    modal.classList.remove("open");
+}
+
+}
+
+function closeOnOverlay(e,id){
+
+if(e.target===e.currentTarget){
+    closeModal(id);
+}
+
+}
+
+document.addEventListener("keydown",e=>{
+
+if(e.key==="Escape"){
+
+document
+.querySelectorAll(".blog-modal-overlay.open")
+.forEach(modal=>{
+    modal.classList.remove("open");
+});
+
+}
+
+});
+
+/* =========================================================
+   3D 7-FACE PRISM
+========================================================= */
+const cube=document.getElementById("cube");
+const faces=document.querySelectorAll(".face");
+const navItems=document.querySelectorAll(".nav-item");
+
+let current=0;
+let radius=0;
+
+const numFaces=faces.length;
+const theta=360/numFaces;
+
+function setupPrism(){
+
+const W=window.innerWidth;
+
+radius=Math.round(
+    (W/2)/Math.tan(Math.PI/numFaces)
+);
+
+faces.forEach((face,i)=>{
+
+const angle=i*theta;
+
+face.style.transform=
+`rotateY(${angle}deg) translateZ(${radius}px)`;
+
+});
+
+applyRotation(current);
+}
+
+function applyRotation(idx){
+
+const angle=idx * -theta;
+
+cube.style.transform=
+`translateZ(-${radius}px) rotateY(${angle}deg)`;
+
+}
+
+function goTo(idx){
+
+current=idx;
+
+navItems.forEach((item,i)=>{
+    item.classList.toggle("active",i===idx);
+});
+
+applyRotation(idx);
+
+setTimeout(()=>{
+
+faces.forEach((face,i)=>{
+
+if(i!==idx){
+
+const scrollWrap=
+face.querySelector(".scroll-wrap");
+
+if(scrollWrap){
+    scrollWrap.scrollTop=0;
+}
+
+}
+
+});
+
+},1000);
+
+}
+
+window.addEventListener("resize",setupPrism);
+
+setupPrism();
+
+/* =========================================================
+   KEYBOARD NAVIGATION
+========================================================= */
+window.addEventListener("keydown",e=>{
+
+if(document.querySelector(".blog-modal-overlay.open")){
+    return;
+}
+
+if(e.key==="ArrowRight"){
+    goTo((current+1)%numFaces);
+}
+
+if(e.key==="ArrowLeft"){
+    goTo((current-1+numFaces)%numFaces);
+}
+
+});
+
+/* =========================================================
+   ACCESSIBLE NAVIGATION
+========================================================= */
+navItems.forEach((item,index)=>{
+
+item.addEventListener("keydown",e=>{
+
+if(e.key==="Enter" || e.key===" "){
+    e.preventDefault();
+    goTo(index);
+}
+
+});
+
+});
+</script>
+
+</body>
+</html>
